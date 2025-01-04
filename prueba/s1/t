@@ -1,0 +1,63 @@
+internal class Program
+{
+    private static void Main(string[] args)
+    {
+        Cabeza();
+        // Clase para el círculo
+        while (true)
+        {
+            Menu();
+            string opcion = Console.ReadLine();
+            switch (opcion)
+            {
+                case "0":
+                    titulo("SALIR");
+                    return;
+                case "1":
+                    titulo("TIPOS DE DATOS BASICOS");
+                    break;
+                case "2":
+                    titulo("P. O. O");
+                    break;
+                case "3":
+                    titulo("ARRAYS Y MATRICES");
+                    break;
+                default:
+                    Console.WriteLine("No es valido");
+                    break;
+            }
+            Piepagina();
+        }
+        static void Cabeza()
+        {
+            Console.WriteLine("*******************************************************************");
+            Console.WriteLine("                    UNIVERSIDAD ESTATAL AMAZONICA                   ");
+            Console.WriteLine("**********************************************************************");
+            Console.WriteLine("");
+            Console.WriteLine("***********************   MENU DE OPCIONE ****************************************");
+            Console.WriteLine("");
+        }
+
+        static void Menu()
+        {
+            Console.WriteLine("0. SALiR");
+            Console.WriteLine("1. TIPOS  DE DATOS BACICOS ");
+            Console.WriteLine("2. P O O");
+            Console.WriteLine("3. ARRAYS Y MATRICES");
+        }
+
+        static void titulo(string titulo)
+        {
+            Console.WriteLine("===================================");
+            Console.WriteLine(titulo);
+            Console.WriteLine("=====================================");
+        }
+
+        static void Piepagina()
+        {
+            Console.WriteLine("-------------------------------------------------------------");
+            Console.WriteLine("Programado por @Evelyn");
+
+        }
+    }
+}
