@@ -1,179 +1,84 @@
-﻿using System;
-//                       ESTRUCTURA DE PACIENTE        ///
-struct Paciente
-{
-    public string Nombre;
-    public string Apellido;
-    public string Cedula;
-    public DateTime FechaNacimiento ;
-}
-//                       ESTRUCTURA DE TURNO          ///
-struct Turno
-{
-    public DateTime Fecha;
+﻿//Escribir un programa que almacene las asignaturas de un curso (por ejemplo Matemáticas, Física, Química, Historia y Lengua) 
+//en una lista y la muestre por pantalla el mensaje Yo estudio <asignatura>, donde <asignatura> es cada una de las asignaturas de la lista.
+Console.WriteLine("*******************************************************************");
+Console.WriteLine("                    UNIVERSIDAD ESTATAL AMAZONICA                   ");
+Console.WriteLine("**********************************************************************");
+Console.WriteLine("");
+Console.WriteLine("-----------------------EJERCICIO 1-------------------------");
+ // Lista de asignaturas
+            List<string> asignaturas= ["Matemáticas","Física","Química","Historia","Lengua"];
 
-    public TimeSpan Hora;
-    public string Motivo;
-    public Paciente Paciente;
-
-
-}
-
-class Agenda
-{
-    static List<Turno> agenda = new List<Turno>();//         LISTA DONDE SE VA ALMACENAR LOS TURNOS           ///
-//                       MENU DE OPCIONES                 ///
-    static void Main(string[] args)
-    {
-        while (true)
-        {   
-            Console.WriteLine("*******************************************************************");
-            Console.WriteLine("                    UNIVERSIDAD ESTATAL AMAZONICA                   ");
-            Console.WriteLine("**********************************************************************");
-            Console.WriteLine("------------------------------------------------------------------");
-            Console.WriteLine("                    \nMENU DE AGENDA MEDICA"                          );
-            Console.WriteLine("------------------------------------------------------------------");
-            Console.WriteLine("");
-            Console.WriteLine("1. Agregar nuevo turno");
-            Console.WriteLine("2. Buscar turno por nombre");
-            Console.WriteLine("3. Mostrar todos los turnos");
-            Console.WriteLine("4. Salir");
-            Console.Write("Ingrese una opción: ");
-
-            int opcion = int.Parse(Console.ReadLine());
-
-            switch (opcion)
+            // Mostrar las asignaturas
+            Console.WriteLine("Asignaturas del curso:");
+            foreach (string asignatura in asignaturas)
             {
-                case 1:
-                    AgregarTurno();
-                    break;
-                case 2:
-                    BuscarTurnoPorNombre();
-                    break;
-                case 3:
-                    MostrarTodosLosTurnos();
-                    break;
-                case 4:
-                    Console.WriteLine("Saliendo del programa...");
-                    return;
-                default:
-                    Console.WriteLine("Opción inválida.");
-                    break;
-            }
-        }
-    }
+                Console.WriteLine(asignatura);
+            } 
+//Escribir un programa que almacene las asignaturas de un curso (por ejemplo Matemáticas, Física, Química, Historia y Lengua) 
+//en una lista y la muestre por pantalla el mensaje Yo estudio <asignatura>, donde <asignatura> es cada una de las asignaturas de la lista.
+Console.WriteLine("");
+Console.WriteLine("-----------------------EJERCICIO 2-------------------------");
+List<string> materias = 
+            ["Matemáticas",
+                "Física",
+                "Química",
+                "Historia",
+                "Lengua"];
 
-    static void AgregarTurno()//Agrega el turno del paciente al sistema
-    {
-        Paciente paciente = new Paciente();
-        Turno turno = new Turno();
-        //                       INGRESA LA CEDULA                  ///
-        Console.Write("Ingrese la cédula del paciente: ");
-        paciente.Cedula = Console.ReadLine();
-        
-
-        // Verificar si la cédula ya existe
-        if (agenda.Any(t => t.Paciente.Cedula == paciente.Cedula))
-        {
-            Console.WriteLine("Ya existe un paciente con esa cédula.");
-            return;
-        }
-
-        //                       INGRESA EL NOMBRE Y APELLIDO                  ///
-        Console.Write("Ingrese el nombre del paciente: ");
-        paciente.Nombre = Console.ReadLine();
-        Console.Write("Ingrese el apellido del paciente: ");
-        paciente.Apellido = Console.ReadLine();
-
-        //                       INGRESA LA FECHA DE NACIMIENTO                    ///
-       Console.Write("Ingrese la fecha de nacimiento: ");
-        if (DateTime.TryParse(Console.ReadLine(), out DateTime fechaNacimiento))
-        {
-            paciente.FechaNacimiento = fechaNacimiento;
-        }
-        else
-        {
-            Console.WriteLine("Fecha inválida. Por favor, ingrese la fecha en formato AAAA-MM-DD.");
-            return;
-        }
-        //                       INGRESA LA FECHA DEL TURNO                     ///
-
-        Console.Write("Ingrese la fecha del turno (AAAA-MM-DD): ");
-        if (DateTime.TryParse(Console.ReadLine(), out DateTime fecha))
-        {
-            turno.Fecha = fecha;
-        }
-        else
-        {
-            Console.WriteLine("Fecha inválida. Por favor, ingrese la fecha en formato AAAA-MM-DD.");
-            return;
-        }
-        //                             INGRESA LA HORA DEL TURNO                    //
-        Console.Write("Ingrese la hora del turno (HH:mm): ");
-        if (TimeSpan.TryParse(Console.ReadLine(), out TimeSpan hora))
-        {
-            turno.Hora = hora;
-        }
-        else
-        {
-            Console.WriteLine("Hora inválida. Por favor, ingrese la hora en formato HH:mm.");
-            return;
-        }
-
-
-
-        turno.Paciente = paciente;
-        agenda.Add(turno);
-        Console.WriteLine("Turno agregado correctamente.");
-    }
-
-    static void BuscarTurnoPorNombre()
-    {
-        Console.Write("Ingrese el nombre del paciente a buscar: ");//busca el turno por el nombre
-        string nombreBuscado = Console.ReadLine();
-
-        bool encontrado = false;
-        foreach (var turno in agenda)
-        {
-            if (turno.Paciente.Nombre.Equals(nombreBuscado, StringComparison.OrdinalIgnoreCase))
+            // Mostrar el mensaje para cada asignatura.
+            foreach (string materia in materias)
             {
-                Console.WriteLine("Turno encontrado:");
-                Console.WriteLine($"Fecha: {turno.Fecha}");
-                Console.WriteLine($"Hora: {turno.Hora}");
-                Console.WriteLine($"Motivo: {turno.Motivo}");
-                encontrado = true;
+                Console.WriteLine($"Yo  Evelyn Arce estudio {materia}");
             }
-        }
 
-        if (!encontrado)
-        {
-            Console.WriteLine("No se encontró ningún turno para ese nombre.");
-        }
-    }
+//Escribir un programa que almacene en una lista los siguientes precios, 50, 75, 46, 22, 80, 65, 8, y muestre por pantalla el menor y el mayor de los precios.
+Console.WriteLine("");
+Console.WriteLine("-----------------------EJERCICIO 3-------------------------");
+            // Lista de precios
+            List<int> precios = [50, 75, 46, 22, 80, 65, 8];
 
-    static void MostrarTodosLosTurnos()//Muesta todos los turnos del sitema
-    {
-        if (agenda.Count == 0)
-        {
-            Console.WriteLine("La agenda está vacía.");
-        }
-        else
-        {
-            Console.WriteLine("------------------------------------------------------------------");
-            Console.WriteLine("                    LISTA DE TURNOS AGENDADOS                     ");
-            Console.WriteLine("------------------------------------------------------------------");
-            foreach (var turno in agenda)
+            // Encontrar el precio mínimo y máximo usando LINQ
+            int precioMinimo = precios.Min();
+            int precioMaximo = precios.Max();
+
+            // Mostrar los resultados
+            Console.WriteLine($"El precio mínimo es: {precioMinimo}");
+            Console.WriteLine($"El precio máximo es: {precioMaximo}");
+//Escribir un programa que pida al usuario una palabra y muestre por pantalla el número de veces que contiene cada vocal.     
+Console.WriteLine("");
+Console.WriteLine("-----------------------EJERCICIO 4-------------------------");
+            Console.Write("Ingrese una palabra: ");
+            string palabra = Console.ReadLine().ToLower();
+
+            // Lista para almacenar las vocales y sus frecuencias
+            List<char> vocales = ['a', 'e', 'i', 'o', 'u'];
+            List<int> frecuencias = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+
+            // Contar las vocales
+            foreach (char letra in palabra)
             {
-                Console.WriteLine($"Cedula: {turno.Paciente.Cedula}");
-                Console.WriteLine($"Fecha de nacimiento: {turno.Paciente.FechaNacimiento}");
-                Console.WriteLine($"Paciente: {turno.Paciente.Nombre} {turno.Paciente.Apellido}");
-                Console.WriteLine($"Fecha: {turno.Fecha}");
-                Console.WriteLine($"Hora: {turno.Hora}");
-                Console.WriteLine($"Motivo: {turno.Motivo}");
-                Console.WriteLine("--------------------");
-                Console.WriteLine("-------------------------------------------------------------");
-                Console.WriteLine("                 Programado por @Evelyn Arce                      ");
+                int indice = vocales.IndexOf(letra);
+                if (indice != -1)
+                {
+                    frecuencias[indice]++;
+                }
             }
-        }
-    }
-}
+
+            // Mostrar el resultado
+            Console.WriteLine("La frecuencia de cada vocal es:");
+            for (int i = 0; i < vocales.Count; i++)
+            {
+                Console.WriteLine($"{vocales[i]}: {frecuencias[i]}");
+            }
+//Escribir un programa que almacene el abecedario en una lista, elimine de la lista las letras que ocupen posiciones múltiplos de 3, y muestre por pantalla la lista resultante.
+Console.WriteLine("");
+Console.WriteLine("-----------------------EJERCICIO 5-------------------------");
+          // Crear una lista con el abecedario
+            List<char> abecedario = new List<char> { 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z' };
+
+            // Eliminar las letras en posiciones múltiplos de 3
+            abecedario.RemoveAll(letra => (abecedario.IndexOf(letra) + 1) % 3 == 0);
+
+            // Mostrar la lista resultante
+            Console.WriteLine("El abecedario sin las letras en posiciones múltiplos de 3 es:");
+            Console.WriteLine(string.Join(", ", abecedario));
