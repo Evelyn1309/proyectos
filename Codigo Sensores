@@ -1,0 +1,187 @@
+/*
+  Sistema de Monitoreo Agrícola IoT con Control Manual de Puerta
+  y Medición de Latencia RTT visualizada en el Terminal
+  Plataforma: Ubidots STEM | Hardware: ESP8266 (NodeMCU)
+*/
+
+#include <UbidotsESPMQTT.h>
+#include <DHT.h>
+#include <Servo.h>
+
+// Credenciales de Conexión
+#define UBIDOTS_TOKEN "BBUS-rROf1tQpXnePQfrOSdhgsfqQshfiGw"
+#define WIFI_SSID "FLIA ARCE"
+#define WIFI_PASS "1005420888DM"
+
+// Identificadores de variables para Ubidots
+#define DEVICE_LABEL "nodo-agricola-1"
+#define VAR_TEMP "temperatura"
+#define VAR_HUM_REL "humedad-relativa"
+#define VAR_HUM_SUELO "humedad-suelo"
+#define VAR_PIR "movimiento-pir"
+#define VAR_SERVO "control-puerta"
+#define VAR_RTT_QOS0 "rtt-qos0"
+#define VAR_RTT_QOS1 "rtt-qos1"
+
+// Configuración de Sensores y Actuadores
+#define DHTPIN D4
+#define DHTTYPE DHT11
+DHT dht(DHTPIN, DHTTYPE);
+
+#define SOIL_PIN A0
+#define PIR_PIN D5
+#define SERVO_PIN D2
+
+// Ángulos de la puerta
+#define ANGULO_CERRADO 0
+#define ANGULO_ABIERTO 90
+
+// Instancias del Servo y MQTT
+Servo miServo;
+Ubidots client(UBIDOTS_TOKEN);
+
+int anguloActual = ANGULO_CERRADO;
+
+// Temporizador para publicación de datos
+unsigned long lastMillis = 0;
+const long interval = 5000; // Envío de sensores cada 5 segundos
+
+// Variables para cálculo de RTT
+unsigned long sendTimeQoS0 = 0;
+unsigned long sendTimeQoS1 = 0;
+long rttQoS0 = -1;
+long rttQoS1 = -1;
+bool waitingQoS0 = false;
+bool waitingQoS1 = false;
+
+// FUNCIÓN CALLBACK: Recibe órdenes y mensajes de eco para RTT y los muestra en la terminal
+void callback(char* topic, byte* payload, unsigned int length) {
+  String mensaje = "";
+  for (unsigned int i = 0; i < length; i++) {
+    mensaje += (char)payload[i];
+  }
+
+  // 1. Verificación de Eco para RTT QoS 0
+  if (strstr(topic, VAR_RTT_QOS0) != NULL) {
+    if (waitingQoS0) {
+      rttQoS0 = millis() - sendTimeQoS0;
+      waitingQoS0 = false;
+      Serial.println("\n----------------------------------------");
+      Serial.print("⏱️ [RTT QoS 0] Latencia medida: ");
+      Serial.print(rttQoS0);
+      Serial.println(" ms");
+      Serial.println("----------------------------------------");
+    }
+    return;
+  }
+
+  // 2. Verificación de Eco para RTT QoS 1
+  if (strstr(topic, VAR_RTT_QOS1) != NULL) {
+    if (waitingQoS1) {
+      rttQoS1 = millis() - sendTimeQoS1;
+      waitingQoS1 = false;
+      Serial.println("\n----------------------------------------");
+      Serial.print("⏱️ [RTT QoS 1] Latencia medida: ");
+      Serial.print(rttQoS1);
+      Serial.println(" ms");
+      Serial.println("----------------------------------------");
+    }
+    return;
+  }
+
+  // 3. Control de Puerta
+  if (strstr(topic, VAR_SERVO) != NULL) {
+    Serial.print("Comando recibido desde Ubidots: ");
+    Serial.println(mensaje);
+
+    float valor = mensaje.toFloat();
+    if (valor == 1.0) {
+      anguloActual = ANGULO_ABIERTO;
+    } else if (valor == 0.0) {
+      anguloActual = ANGULO_CERRADO;
+    } else {
+      anguloActual = constrain((int)valor, 0, 180);
+    }
+
+    miServo.write(anguloActual);
+    Serial.print("-> Puerta colocada a: ");
+    Serial.print(anguloActual);
+    Serial.println("°");
+  }
+}
+
+void setup() {
+  Serial.begin(9600);
+
+  // Configuración de sensores
+  pinMode(PIR_PIN, INPUT);
+  dht.begin();
+
+  // Configuración del Servomotor
+  miServo.attach(SERVO_PIN);
+  miServo.write(ANGULO_CERRADO);
+
+  // Conexión red y MQTT
+  client.wifiConnection(WIFI_SSID, WIFI_PASS);
+  client.begin(callback);
+
+  // Suscripción a la puerta y a las variables de RTT para recibir el eco
+  client.ubidotsSubscribe(DEVICE_LABEL, VAR_SERVO);
+  client.ubidotsSubscribe(DEVICE_LABEL, VAR_RTT_QOS0);
+  client.ubidotsSubscribe(DEVICE_LABEL, VAR_RTT_QOS1);
+
+  Serial.println("Sistema MQTT agrícola con medición de RTT en terminal listo...");
+}
+
+void loop() {
+  if (!client.connected()) {
+    client.reconnect();
+    client.ubidotsSubscribe(DEVICE_LABEL, VAR_SERVO);
+    client.ubidotsSubscribe(DEVICE_LABEL, VAR_RTT_QOS0);
+    client.ubidotsSubscribe(DEVICE_LABEL, VAR_RTT_QOS1);
+  }
+
+  if (millis() - lastMillis >= interval) {
+    lastMillis = millis();
+
+    // Lecturas de Sensores
+    float h_relativa = dht.readHumidity();
+    float t_ambiente = dht.readTemperature();
+    int valor_analogo = analogRead(SOIL_PIN);
+    int porcentaje_mapeado = map(valor_analogo, 0, 1023, 0, 100);
+    int h_suelo = (porcentaje_mapeado - 100) * -1;
+    int movimiento = digitalRead(PIR_PIN);
+
+    if (isnan(h_relativa) || isnan(t_ambiente)) {
+      Serial.println("⚠️ Error al leer el sensor DHT11. Se omite envío.");
+    } else {
+      Serial.println("\n--- Transmitiendo datos a Ubidots ---");
+      Serial.print("Temp: "); Serial.print(t_ambiente); Serial.println(" °C");
+      Serial.print("Humedad Relativa: "); Serial.print(h_relativa); Serial.println(" %");
+      Serial.print("Humedad Suelo: "); Serial.print(h_suelo); Serial.println(" %");
+      Serial.print("PIR: "); Serial.println(movimiento ? "¡Movimiento!" : "Normal");
+
+      // Cargar sensores
+      client.add(VAR_TEMP, t_ambiente);
+      client.add(VAR_HUM_REL, h_relativa);
+      client.add(VAR_HUM_SUELO, h_suelo);
+      client.add(VAR_PIR, movimiento);
+      client.add(VAR_SERVO, anguloActual);
+
+      // Registrar marcas de tiempo para RTT justo antes de publicar
+      sendTimeQoS0 = millis();
+      waitingQoS0 = true;
+      client.add(VAR_RTT_QOS0, (float)sendTimeQoS0);
+
+      sendTimeQoS1 = millis();
+      waitingQoS1 = true;
+      client.add(VAR_RTT_QOS1, (float)sendTimeQoS1);
+
+      // Enviar todo el paquete MQTT
+      client.ubidotsPublish(DEVICE_LABEL);
+      Serial.println("📤 Paquete enviado. Esperando eco para calcular RTT...");
+    }
+  }
+
+  client.loop();
+}
